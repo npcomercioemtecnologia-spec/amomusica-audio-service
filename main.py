@@ -20,22 +20,30 @@ def home():
     return {
         "status": "online",
         "service": "AmoMusica YouTube Audio Stream Service",
-        "version": "1.0"
+        "version": "1.1"
+    }
+
+def get_ydl_options():
+    return {
+        'format': 'bestaudio[ext=m4a]/bestaudio/18/b/ba',
+        'quiet': True,
+        'no_warnings': True,
+        'extract_flat': False,
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'ios', 'tv_embedded']
+            }
+        }
     }
 
 @app.get("/audio")
 def get_audio_url(v: str = Query(..., description="YouTube Video ID (11 chars)")):
-    """Retorna o link direto do fluxo de áudio puro (m4a/opus) do YouTube."""
+    """Retorna o link direto do fluxo de áudio do YouTube compatível com o AmoMúsica."""
     v = v.strip()
     if len(v) != 11:
         raise HTTPException(status_code=400, detail="Invalid YouTube Video ID format.")
 
-    ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio/ba',
-        'quiet': True,
-        'no_warnings': True,
-        'extract_flat': False,
-    }
+    ydl_opts = get_ydl_options()
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -61,11 +69,7 @@ def stream_audio(v: str = Query(..., description="YouTube Video ID")):
     if len(v) != 11:
         raise HTTPException(status_code=400, detail="Invalid YouTube Video ID format.")
 
-    ydl_opts = {
-        'format': 'bestaudio[ext=m4a]/bestaudio/ba',
-        'quiet': True,
-        'no_warnings': True,
-    }
+    ydl_opts = get_ydl_options()
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
